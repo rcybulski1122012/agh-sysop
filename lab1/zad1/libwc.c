@@ -76,6 +76,7 @@ void BlocksTable_countWords(BlocksTable* table, char* filename) {
     snprintf(command, MAX_COMMAND_LENGTH, "rm -f '%s'", tempFilename);
     if(system(command) == -1) {
         puts("Failed to delete the file!");
+        return;
     }
 
     table->blocks[table->currentSize] = fileContent;
