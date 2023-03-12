@@ -1,0 +1,13 @@
+Zostały wykonane wszystkie zadania (100%).
+
+Rezultaty do zadania 3 znajdują się w opdowiednio zad3a/results oraz zad3b/results.
+
+Wyniki dla zad3a wskazują, że program używający bilbioteki statycznej działa najszybciej. Mimo to przeczytanie
+jednego z plików zajęło mu więcej niż programy używające shared object i dll (dla nich wyniki są porównywalne).
+
+W wynkiach dla zad3b można zauważyć, że optymalizacja przyspiesza działanie programów, natomiast jest to
+ogrmona zmiana ("na oko" maksymalnie 10-20% między programem skompilowanym domyslnie a tym z flagą -O3).
+
+`make test_static`, `make test_dynamic`, `make test_dll` tworzą raporty dla zad 3a.
+
+`make test` tworzy raport dla zad3b.

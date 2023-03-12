@@ -1,5 +1,9 @@
 NAME=libwc
 
+all:
+	make static_lib
+	make dynamic_main
+
 static_lib:
 	gcc -Wall -c $(NAME).c
 	ar cr $(NAME).a $(NAME).o
