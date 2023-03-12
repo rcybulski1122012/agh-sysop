@@ -182,5 +182,7 @@ int main() {
         printExecTimes(startTms, endTms, startTimespec, endTimespec);
     }
 
+    closeDLL();
+
     return 0;
 }

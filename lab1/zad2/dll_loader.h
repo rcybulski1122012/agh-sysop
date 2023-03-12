@@ -3,8 +3,10 @@
 
 #ifdef USE_DLL
 
+void* handle;
+
 bool loadDLL(char* file) {
-    void *handle = dlopen(file, RTLD_LAZY);
+    handle = dlopen(file, RTLD_LAZY);
     if(!handle) return false;
 
     *(void **) (&BlocksTable_create) = dlsym(handle, "BlocksTable_create");
@@ -18,6 +20,11 @@ bool loadDLL(char* file) {
     return true;
 }
 
+void closeDLL() {
+    dlclose(handle);
+}
+
 #else
-bool loadDLL(char* file) {return true}
+bool loadDLL(char* file) {return true;}
+void closeDLL() {}
 #endif
