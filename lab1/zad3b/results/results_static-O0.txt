@@ -1,0 +1,64 @@
+>>> Real execution time: 2180 ns
+User execution time: 0
+System execution time: 0
+>>> Real execution time: 3196864 ns
+User execution time: 0
+System execution time: 0
+>>> Real execution time: 3289440 ns
+User execution time: 0
+System execution time: 0
+>>> Real execution time: 3125790 ns
+User execution time: 0
+System execution time: 0
+>>> Real execution time: 3192602 ns
+User execution time: 0
+System execution time: 0
+>>> Real execution time: 3338535 ns
+User execution time: 0
+System execution time: 0
+>>>  30  72 720 ./dll_loader.h
+
+Real execution time: 1333 ns
+User execution time: 0
+System execution time: 0
+>>>  29  72 786 ./libwc.h
+
+Real execution time: 1094 ns
+User execution time: 0
+System execution time: 0
+>>>  122  308 2890 ./libwc.c
+
+Real execution time: 1086 ns
+User execution time: 0
+System execution time: 0
+>>>  181  416 4366 ./main.c
+1
+Real execution time: 1087 ns
+User execution time: 0
+System execution time: 0
+>>>   80  232 2166 ./Makefile
+
+Real execution time: 1090 ns
+User execution time: 0
+System execution time: 0
+>>> Real execution time: 1244 ns
+User execution time: 0
+System execution time: 0
+>>> Real execution time: 1074 ns
+User execution time: 0
+System execution time: 0
+>>> Real execution time: 1076 ns
+User execution time: 0
+System execution time: 0
+>>> Real execution time: 1075 ns
+User execution time: 0
+System execution time: 0
+>>> Real execution time: 1078 ns
+User execution time: 0
+System execution time: 0
+>>> Real execution time: 1231 ns
+User execution time: 0
+System execution time: 0
+>>> Real execution time: 1095 ns
+User execution time: 0
+System execution time: 0
