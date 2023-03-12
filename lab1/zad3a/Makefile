@@ -1,5 +1,10 @@
 NAME=libwc
 
+all:
+	make test_static
+	make test_dynamic
+	make test_dll
+
 static_lib:
 	gcc -Wall -c $(NAME).c
 	ar cr $(NAME).a $(NAME).o
@@ -22,11 +27,11 @@ dll_main:
 
 _create_test_file:
 	echo "init 100" > test_commands.txt
-	echo "count ./dll_loader.h" >> test_commands.txt
-	echo "count ./libwc.h" >> test_commands.txt
-	echo "count ./libwc.c" >> test_commands.txt
-	echo "count ./main.c" >> test_commands.txt
-	echo "count ./Makefile" >> test_commands.txt
+	echo "count dll_loader.h" >> test_commands.txt
+	echo "count libwc.h" >> test_commands.txt
+	echo "count libwc.c" >> test_commands.txt
+	echo "count main.c" >> test_commands.txt
+	echo "count Makefile" >> test_commands.txt
 	echo "show 0" >> test_commands.txt
 	echo "show 1" >> test_commands.txt
 	echo "show 2" >> test_commands.txt
