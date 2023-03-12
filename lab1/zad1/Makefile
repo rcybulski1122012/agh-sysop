@@ -14,4 +14,3 @@ dynamic:
 
 clean:
 	rm -f *.o *.a *.so
-	rm -f main
