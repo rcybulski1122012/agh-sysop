@@ -19,21 +19,21 @@ int main() {
     }
 
     struct dirent* entry;
-    struct stat* buf = malloc(sizeof(struct stat));
+    struct stat buf;
 
     while((entry = readdir(dir))) {
         if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
             continue;
         }
         snprintf(path, MAX_PATH_SIZE, "./%s", entry->d_name);
-        stat(path, buf);
+        stat(path, &buf);
 
-        if(S_ISDIR(buf->st_mode)) {
+        if(S_ISDIR(buf.st_mode)) {
             continue;
         }
 
-        totalSize += buf->st_size;
-        printf("%s: %zuB\n",entry->d_name, buf->st_size);
+        totalSize += buf.st_size;
+        printf("%s: %zuB\n",entry->d_name, buf.st_size);
     }
 
     printf("-----------------------------\nSumaryczny rozmiar plików: %lldB\n", totalSize);
