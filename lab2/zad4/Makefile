@@ -1,3 +1,6 @@
+all:
+	make compile
+
 compile:
 	gcc -Wall -o main main.c
 

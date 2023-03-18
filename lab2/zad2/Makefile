@@ -1,3 +1,7 @@
+all:
+	make compile_1024
+	make compile_1
+
 compile_1024:
 	gcc -Wall -o main_1024 main.c
 
