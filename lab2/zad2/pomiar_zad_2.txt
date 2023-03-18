@@ -1,0 +1,4 @@
+Po 1:
+Czas wykonania: 5558321s
+Po 1024
+Czas wykonania: 115456s

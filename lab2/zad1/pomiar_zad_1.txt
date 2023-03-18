@@ -1,4 +1,4 @@
 Funckje C
-Czas wykonania: 4779573s
+Czas wykonania: 4566140s
 Funckje systemowe
-Czas wykonania: 405806722s
+Czas wykonania: 383096117s

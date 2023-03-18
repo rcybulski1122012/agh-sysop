@@ -3,10 +3,10 @@ all:
 	make compile_sys_funcs
 
 compile:
-	gcc -o main main.c
+	gcc -Wall -o main main.c
 
 compile_sys_funcs:
-	gcc -o main_sys_funcs main.c -D USE_SYS_FUNC
+	gcc -Wall -o main_sys_funcs main.c -D USE_SYS_FUNC
 
 clean:
 	rm -f main main_sys_funcs *.txt
