@@ -1,0 +1,9 @@
+W przypadku użycia forka
+ignore oraz mask działa w rodzicu i dziecku
+handler jest wykonywany w rodzicu i dziecku
+pending jest widoczny tylko w rodzicu
+
+W przypadku exec
+ignore oraz mask działa w rodzicu i dziecku
+handler działa w rodzicu
+pedning jest widoczny w rodzicu i dziecku
