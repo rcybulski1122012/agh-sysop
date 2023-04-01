@@ -1,0 +1,62 @@
+test SA_SIGINFO
+
+Signal info:
+Signal code: -6
+User time consumer: 0
+User id of sending process: 1000
+Signal number: 10
+PID: 20754
+
+
+test SA_NODEFER
+
+With SA_NODEFER
+depth: 0
+depth: 1
+depth: 2
+depth: 3
+depth: 4
+depth: 5
+depth: 6
+depth: 7
+depth: 8
+depth: 9
+depth: 9
+depth: 8
+depth: 7
+depth: 6
+depth: 5
+depth: 4
+depth: 3
+depth: 2
+depth: 1
+depth: 0
+
+
+
+Without SA_NODEFER
+depth: 0
+depth: 0
+depth: 0
+depth: 0
+depth: 0
+depth: 0
+depth: 0
+depth: 0
+depth: 0
+depth: 0
+depth: 0
+depth: 0
+depth: 0
+depth: 0
+depth: 0
+depth: 0
+depth: 0
+depth: 0
+depth: 0
+depth: 0
+
+
+test SA_RESETHAND
+
+SA_RESETHAND flag test

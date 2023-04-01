@@ -16,6 +16,7 @@ int main() {
     action.sa_flags = SA_RESETHAND;
     sigaction(SIGUSR1, &action, NULL);
     raise(SIGUSR1);
+    fflush(NULL);
     raise(SIGUSR1);
 
     return 0;

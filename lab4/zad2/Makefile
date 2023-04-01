@@ -15,7 +15,7 @@ test:
 	./siginfo >> results.txt
 	echo "\n\ntest SA_NODEFER\n" >> results.txt
 	./nodefer >> results.txt
-	echo "\n\n test SA_RESETHAND\n" >> results.txt
+	echo "\n\ntest SA_RESETHAND\n" >> results.txt
 	./resethand >> results.txt
 
 
