@@ -1,0 +1,36 @@
+Szerokość prostokąta: 1e-08, liczba procesów: 1
+Wynik: 3.14159
+Czas wykonania: 0s
+
+Szerokość prostokąta: 1e-08, liczba procesów: 10
+Wynik: 3.1416
+Czas wykonania: 0s
+
+Szerokość prostokąta: 1e-08, liczba procesów: 100
+Wynik: 3.1416
+Czas wykonania: 0s
+
+Szerokość prostokąta: 1e-09, liczba procesów: 1
+Wynik: 3.14159
+Czas wykonania: 5s
+
+Szerokość prostokąta: 1e-09, liczba procesów: 10
+Wynik: 3.1416
+Czas wykonania: 1s
+
+Szerokość prostokąta: 1e-09, liczba procesów: 100
+Wynik: 3.1416
+Czas wykonania: 1s
+
+Szerokość prostokąta: 1e-10, liczba procesów: 1
+Wynik: 3.14159
+Czas wykonania: 45s
+
+Szerokość prostokąta: 1e-10, liczba procesów: 10
+Wynik: 3.1416
+Czas wykonania: 13s
+
+Szerokość prostokąta: 1e-10, liczba procesów: 100
+Wynik: 3.1416
+Czas wykonania: 12s
+
