@@ -17,22 +17,32 @@ char logBuffer[LOG_BUFF_SIZE] = "";
 time_t now;
 struct tm *timeinfo;
 
+MsgBuf msgBuf;
+char msgContentBuf[MAX_MSG_LENGTH] = "";
+
 bool isRunning = true;
+
+
+void resetMsgBuf() {
+    msgBuf.clientId = -1;
+    msgBuf.msgType = -1;
+    msgBuf.msgContent[0] = '\0';
+    msgBuf.queueKey = -1;
+}
 
 
 void stopServer() {
     isRunning = false;
 
-    MsgBuf* msgBuf = malloc(MSG_BUF_SIZE);
-    msgBuf->msgType = STOP;
+    resetMsgBuf();
+    msgBuf.msgType = STOP;
     for(int i=0; i<MAX_CLIENTS_ID; i++) {
         if(clientsQueues[i] != -1) {
             int queueId = msgget(clientsQueues[i], 0);
-            msgsnd(queueId, msgBuf, MSG_BUF_SIZE, 0);
+            msgsnd(queueId, &msgBuf, MSG_BUF_SIZE, 0);
         }
     }
 
-    free(msgBuf);
     msgctl(msqId, IPC_RMID, NULL);
 }
 
@@ -59,14 +69,14 @@ int getClientId() {
 }
 
 
-void logMsg(MsgBuf* msgBuf) {
+void logMsg(MsgBuf msgBuf) {
     logfd = fopen("./logs", "a");
     time(&now);
     timeinfo = localtime(&now);
     snprintf(
         logBuffer, LOG_BUFF_SIZE,
         "%s    Message Type: %lu\n    Client Id: %d\n    Receiver Id: %d\n    Message Content: %s\n\n",
-         asctime(timeinfo), msgBuf->msgType, msgBuf->clientId, msgBuf->receiverId, msgBuf->msgContent
+         asctime(timeinfo), msgBuf.msgType, msgBuf.clientId, msgBuf.receiverId, msgBuf.msgContent
     );
     puts(logBuffer);
     fwrite(logBuffer, sizeof(char), strlen(logBuffer), logfd);
@@ -75,18 +85,17 @@ void logMsg(MsgBuf* msgBuf) {
 
 
 void handle_INIT(key_t queueKey) {
-    MsgBuf *msgBuf = malloc(sizeof(MsgBuf));
+    resetMsgBuf();
     int clientId = getClientId();
 
     if(clientId != -1) {
         clientsQueues[clientId] = queueKey;
     }
 
-    msgBuf->clientId = clientId;
-    msgBuf->msgType = INIT;
+    msgBuf.clientId = clientId;
+    msgBuf.msgType = INIT;
     int clientQueueId = msgget(queueKey, 0);
-    msgsnd(clientQueueId, msgBuf, MSG_BUF_SIZE, 0);
-    free(msgBuf);
+    msgsnd(clientQueueId, &msgBuf, MSG_BUF_SIZE, 0);
 }
 
 void handle_STOP(int clientId) {
@@ -95,42 +104,40 @@ void handle_STOP(int clientId) {
 
 
 void handle_LIST(int clientId, key_t queueKey) {
-    MsgBuf *msgBuf = malloc(MSG_BUF_SIZE);
-    char buf[32] = "";
-    sprintf(msgBuf->msgContent, "Active users:");
+    resetMsgBuf();
+    char buf[MAX_CLIENTS_ID * 4] = "";
+    sprintf(msgBuf.msgContent, "Active users:");
     for (int i=0; i<MAX_CLIENTS_ID; i++) {
         if(clientsQueues[i] != -1 && i != clientId) {
             snprintf(buf, 32, "%d, ", i);
-            strcat(msgBuf->msgContent, buf);
+            strcat(msgBuf.msgContent, buf);
         }
     }
-    msgBuf->msgType = LIST;
+    msgBuf.msgType = LIST;
     int clientQueueId = msgget(queueKey, 0);
-    msgsnd(clientQueueId, msgBuf, MSG_BUF_SIZE, 0);
-    free(msgBuf);
+    msgsnd(clientQueueId, &msgBuf, MSG_BUF_SIZE, 0);
 }
 
 void handle_TO_ALL(int senderId, char* message) {
-    MsgBuf *msgBuf = malloc(MSG_BUF_SIZE);
+    resetMsgBuf();
     time(&now);
     timeinfo = localtime(&now);
-    msgBuf->sentAt = *timeinfo;
-    msgBuf->msgType = PRINT;
-    msgBuf->clientId = senderId;
-    snprintf(msgBuf->msgContent, MAX_MSG_LENGTH, "%s", message);
+    msgBuf.sentAt = *timeinfo;
+    msgBuf.msgType = PRINT;
+    msgBuf.clientId = senderId;
+    snprintf(msgBuf.msgContent, MAX_MSG_LENGTH, "%s", message);
     for (int i=0; i<MAX_CLIENTS_ID; i++) {
         if(i != senderId && clientsQueues[i] != -1) {
             key_t receiverKey = clientsQueues[i];
             int receiverQueueId = msgget(receiverKey, 0);
-            msgsnd(receiverQueueId, msgBuf, MSG_BUF_SIZE, 0);
+            msgsnd(receiverQueueId, &msgBuf, MSG_BUF_SIZE, 0);
         }
     }
-    free(msgBuf);
 }
 
 
 void handle_TO_ONE(int senderId, int receiverId, char* message) {
-    MsgBuf *msgBuf = malloc(MSG_BUF_SIZE);
+    resetMsgBuf();
     if(receiverId >= MAX_CLIENTS_ID || clientsQueues[receiverId] == -1) {
         return;
     }
@@ -140,12 +147,11 @@ void handle_TO_ONE(int senderId, int receiverId, char* message) {
 
     time(&now);
     timeinfo = localtime(&now);
-    msgBuf->sentAt = *timeinfo;
-    msgBuf->msgType = PRINT;
-    msgBuf->clientId = senderId;
-    snprintf(msgBuf->msgContent, MAX_MSG_LENGTH, "%s", message);
-    msgsnd(receiverQueueId, msgBuf, MSG_BUF_SIZE, 0);
-    free(msgBuf);
+    msgBuf.sentAt = *timeinfo;
+    msgBuf.msgType = PRINT;
+    msgBuf.clientId = senderId;
+    snprintf(msgBuf.msgContent, MAX_MSG_LENGTH, "%s", message);
+    msgsnd(receiverQueueId, &msgBuf, MSG_BUF_SIZE, 0);
 }
 
 
@@ -159,36 +165,33 @@ int main() {
     key_t queueKey = ftok(getenv("HOME"), SERVER_ID);
     msqId = msgget(queueKey, 0666 | IPC_CREAT);
 
-    printf("queueKey=%d, queueId=%d\n", queueKey, msqId);
-
     initServer();
 
-
-    MsgBuf *msgBuf = malloc(sizeof(MsgBuf));
+    resetMsgBuf();
     while(isRunning) {
-        msgrcv(msqId, msgBuf, MSG_BUF_SIZE, ALL_MESSAGES, 0);
+        msgrcv(msqId, &msgBuf, MSG_BUF_SIZE, ALL_MESSAGES, 0);
+        strcpy(msgContentBuf, msgBuf.msgContent);
         logMsg(msgBuf);
-        switch (msgBuf->msgType) {
+        switch (msgBuf.msgType) {
             case INIT:
-                handle_INIT(msgBuf->queueKey);
+                handle_INIT(msgBuf.queueKey);
                 break;
             case STOP:
-                handle_STOP(msgBuf->clientId);
+                handle_STOP(msgBuf.clientId);
                 break;
             case LIST:
-                handle_LIST(msgBuf->clientId, clientsQueues[msgBuf->clientId]);
+                handle_LIST(msgBuf.clientId, clientsQueues[msgBuf.clientId]);
                 break;
             case TO_ALL:
-                handle_TO_ALL(msgBuf->clientId, msgBuf->msgContent);
+                handle_TO_ALL(msgBuf.clientId, msgContentBuf);
                 break;
             case TO_ONE:
-                handle_TO_ONE(msgBuf->clientId, msgBuf->receiverId, msgBuf->msgContent);
+                handle_TO_ONE(msgBuf.clientId, msgBuf.receiverId, msgContentBuf);
                 break;
             default:
                 continue;
         }
     }
-    free(msgBuf);
 
     return 0;
 }

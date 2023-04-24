@@ -15,23 +15,31 @@ key_t myKey;
 int serverQueueId;
 key_t serverQueueKey;
 MsgType msgType;
+MsgBuf msgBuf;
 
 char commandBuf[COMMAND_BUFF_SIZE] = "";
 int intArg;
 char strArg[MAX_MSG_LENGTH] = "";
 
+void resetMsgBut() {
+    msgBuf.clientId = -1;
+    msgBuf.msgType = -1;
+    msgBuf.msgContent[0] = '\0';
+    msgBuf.queueKey = -1;
+}
+
 
 void init() {
+    resetMsgBut();
     myKey = ftok(getenv("HOME"), getpid() % MAX_CLIENTS_ID + 1);
-    MsgBuf *msgBuf = malloc(MSG_BUF_SIZE);
-    msgBuf->msgType = INIT;
-    msgBuf->queueKey = myKey;
+    msgBuf.msgType = INIT;
+    msgBuf.queueKey = myKey;
 
-    msgsnd(serverQueueId, msgBuf, MSG_BUF_SIZE, 0);
+    msgsnd(serverQueueId, &msgBuf, MSG_BUF_SIZE, 0);
     myQueueId = msgget(myKey, 0666 | IPC_CREAT);
 
-    msgrcv(myQueueId, msgBuf, MSG_BUF_SIZE, ALL_MESSAGES, 0);
-    clientId = msgBuf->clientId;
+    msgrcv(myQueueId, &msgBuf, MSG_BUF_SIZE, ALL_MESSAGES, 0);
+    clientId = msgBuf.clientId;
 
 
 
@@ -42,7 +50,6 @@ void init() {
     else {
         printf("Connected to the server. Your id: %d\n", clientId);
     }
-    free(msgBuf);
 }
 
 
@@ -70,7 +77,7 @@ bool parseInput() {
     }
     else if(startsWith("2ALL", commandBuf)) {
         msgType = TO_ALL;
-        matched = sscanf(commandBuf, "2ALL %[^\\n]", strArg);
+        matched = sscanf(commandBuf, "2ALL %s", strArg);
         if(matched != 1) {
             puts("Invalid input!");
             return false;
@@ -79,7 +86,7 @@ bool parseInput() {
     }
     else if(startsWith("2ONE", commandBuf)) {
         msgType = TO_ONE;
-        matched = sscanf(commandBuf, "2ONE %d %[^\\n]", &intArg, strArg);
+        matched = sscanf(commandBuf, "2ONE %d %s", &intArg, strArg);
         if (matched != 2) {
             puts("Invalid input!");
             return false;
@@ -93,45 +100,41 @@ bool parseInput() {
 
 
 void handleSTOP() {
-    MsgBuf * msgBuf = malloc(MSG_BUF_SIZE);
-    msgBuf->clientId = clientId;
-    msgBuf->msgType = STOP;
-    msgsnd(serverQueueId, msgBuf, MSG_BUF_SIZE, 0);
+    resetMsgBut();
+    msgBuf.clientId = clientId;
+    msgBuf.msgType = STOP;
+    msgsnd(serverQueueId, &msgBuf, MSG_BUF_SIZE, 0);
     msgctl(myQueueId, IPC_CREAT, NULL);
-    free(msgBuf);
     exit(0);
 }
 
 
 void handleLIST() {
-    MsgBuf * msgBuf = malloc(MSG_BUF_SIZE);
-    msgBuf->clientId = clientId;
-    msgBuf->msgType = LIST;
-    msgsnd(serverQueueId, msgBuf, MSG_BUF_SIZE, 0);
-    msgrcv(myQueueId, msgBuf, MSG_BUF_SIZE, LIST, 0);
-    puts(msgBuf->msgContent);
-    free(msgBuf);
+    resetMsgBut();
+    msgBuf.clientId = clientId;
+    msgBuf.msgType = LIST;
+    msgsnd(serverQueueId, &msgBuf, MSG_BUF_SIZE, 0);
+    msgrcv(myQueueId, &msgBuf, MSG_BUF_SIZE, LIST, 0);
+    puts(msgBuf.msgContent);
 }
 
 
 void handle2ONE() {
-    MsgBuf * msgBuf = malloc(MSG_BUF_SIZE);
-    msgBuf->clientId = clientId;
-    msgBuf->receiverId = intArg;
-    msgBuf->msgType = TO_ONE;
-    snprintf(msgBuf->msgContent, MAX_MSG_LENGTH, "%s", strArg);
-    msgsnd(serverQueueId, msgBuf, MSG_BUF_SIZE, 0);
-    free(msgBuf);
+    resetMsgBut();
+    msgBuf.clientId = clientId;
+    msgBuf.receiverId = intArg;
+    msgBuf.msgType = TO_ONE;
+    snprintf(msgBuf.msgContent, MAX_MSG_LENGTH, "%s", strArg);
+    msgsnd(serverQueueId, &msgBuf, MSG_BUF_SIZE, 0);
 }
 
 
 void handle2ALL() {
-    MsgBuf * msgBuf = malloc(MSG_BUF_SIZE);
-    msgBuf->clientId = clientId;
-    msgBuf->msgType = TO_ALL;
-    snprintf(msgBuf->msgContent, MAX_MSG_LENGTH, "%s", strArg);
-    msgsnd(serverQueueId, msgBuf, MSG_BUF_SIZE, 0);
-    free(msgBuf);
+    resetMsgBut();
+    msgBuf.clientId = clientId;
+    msgBuf.msgType = TO_ALL;
+    snprintf(msgBuf.msgContent, MAX_MSG_LENGTH, "%s", strArg);
+    msgsnd(serverQueueId, &msgBuf, MSG_BUF_SIZE, 0);
 }
 
 
@@ -155,19 +158,16 @@ void handleCommand() {
 }
 
 void listenPRINTandSTOP() {
-    MsgBuf * msgBuf = malloc(MSG_BUF_SIZE);
-    while(msgrcv(myQueueId, msgBuf, MSG_BUF_SIZE, PRINT, IPC_NOWAIT) != -1) {
-        printf("Sent at: %s From: %d\n Message:\n%s\n", asctime(&msgBuf->sentAt), msgBuf->clientId, msgBuf->msgContent);
+    resetMsgBut();
+    while(msgrcv(myQueueId, &msgBuf, MSG_BUF_SIZE, PRINT, IPC_NOWAIT) != -1) {
+        printf("Sent at: %s From: %d\n Message:\n%s\n", asctime(&msgBuf.sentAt), msgBuf.clientId, msgBuf.msgContent);
     }
 
-    if(msgrcv(myQueueId, msgBuf, MSG_BUF_SIZE, STOP, IPC_NOWAIT) != -1) {
+    if(msgrcv(myQueueId, &msgBuf, MSG_BUF_SIZE, STOP, IPC_NOWAIT) != -1) {
         puts("SERVER STOPPED");
         handleSTOP();
-        free(msgBuf);
         exit(0);
     }
-
-    free(msgBuf);
 }
 
 
