@@ -185,6 +185,7 @@ int main() {
     }
 
     init();
+//    atexit(handleSTOP);
     signal(SIGINT, handleSTOP);
 
 
