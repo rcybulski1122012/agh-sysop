@@ -13,6 +13,8 @@ pthread_t elves[NUMBER_OF_ELVES];
 
 pthread_mutex_t help_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t help_cond = PTHREAD_COND_INITIALIZER;
+pthread_cond_t presents_ready_cond = PTHREAD_COND_INITIALIZER;
+pthread_cond_t elves_waiting_cond = PTHREAD_COND_INITIALIZER;
 
 typedef struct
 {
@@ -24,7 +26,7 @@ SantaInfo santa_info = {0, {-1, -1, -1}};
 
 bool reindeers_ready()
 {
-    return santa_info.active_reindeers == NUMBER_OF_REINDEER;
+    return santa_info.active_reindeers >= NUMBER_OF_REINDEER;
 }
 
 bool elves_need_help()
@@ -79,9 +81,10 @@ int randint(int min, int max)
 
 void santa()
 {
-    pthread_mutex_lock(&help_mutex);
     while (true)
     {
+        pthread_mutex_lock(&help_mutex);
+
         puts("Mikołaj: Zasypiam");
         while (!reindeers_ready() && !elves_need_help())
         {
@@ -93,6 +96,7 @@ void santa()
             puts("Mikołaj: dostarcza zabawki");
             sleep(randint(2, 4));
             santa_info.active_reindeers = 0;
+            pthread_cond_broadcast(&presents_ready_cond);
         }
 
         if (elves_need_help())
@@ -105,11 +109,11 @@ void santa()
 
             sleep(randint(1, 2));
             clean_waiting_elves();
+            pthread_cond_broadcast(&elves_waiting_cond);
         }
 
-        pthread_cond_broadcast(&help_cond);
+        pthread_mutex_unlock(&help_mutex);
     }
-    pthread_mutex_unlock(&help_mutex);
 }
 
 void *reindeer_routine(void *arg)
@@ -130,11 +134,13 @@ void *reindeer_routine(void *arg)
             printf("Renifer %d: czeka %d reniferów na Mikołaja\n", *id, santa_info.active_reindeers);
         }
 
-        pthread_cond_broadcast(&help_cond);
-        while (reindeers_ready())
-        {
-            pthread_cond_wait(&help_cond, &help_mutex);
+        pthread_cond_signal(&help_cond);
+
+        while(santa_info.active_reindeers > 0) {
+            pthread_cond_wait(&presents_ready_cond, &help_mutex);
         }
+
+
         pthread_mutex_unlock(&help_mutex);
     }
 
@@ -161,6 +167,13 @@ void *elves_routine(void *arg)
                 printf("Elf %d: czeka %d elfów na Mikołaja\n", *id, get_number_of_waiting_elves());
             }
             pthread_cond_signal(&help_cond);
+
+            if(elves_need_help()) {
+                printf("Elf %d: Mikołaj rozwiązuje problem\n", *id);
+            }
+            while(elves_need_help()) {
+                pthread_cond_wait(&elves_waiting_cond, &help_mutex);
+            }
         }
         else
         {
